@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>黄金大作手 · 历史</title>
+<style>
+:root{--bg:#0d1117;--panel:#141a22;--raised:#1b232d;--line:#253040;--ink:#e8ecf1;--ink-2:#a3adba;--ink-3:#6f7b8a;--accent:#d9b24c;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;--sans:"IBM Plex Sans","PingFang SC","Hiragino Sans GB",system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.55 var(--sans)}
+main{max-width:1100px;margin:0 auto;padding:18px 20px 40px;display:grid;gap:14px}
+h1{font-size:16px;margin:0} h2{font-size:14px;margin:0 0 8px;color:var(--ink)} a{color:var(--accent)}
+.block{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+table{border-collapse:collapse;width:100%;font-size:12px;font-family:var(--mono)} th{text-align:left;color:var(--ink-3);font-weight:500;padding:4px 6px;border-bottom:1px solid var(--line);font-family:var(--sans)} td{padding:4px 6px;border-bottom:1px solid var(--line);vertical-align:top} td.t{font-family:var(--sans)}
+pre{font:12px/1.5 var(--mono);white-space:pre-wrap;background:var(--raised);border-radius:8px;padding:10px;margin:0}
+.muted{color:var(--ink-3)} .hi{color:#ec835a}
+</style>
+</head>
+<body>
+<main>
+  <h1>黄金大作手 · 历史 <a href="index.html" style="font-size:12px;margin-left:10px">← 作战台</a></h1>
+  <section class="block" id="decisions"><h2>决策日志</h2><div id="dec"></div></section>
+  <section class="block" id="alerts"><h2>近 7 日提醒</h2><div id="al"></div></section>
+  <section class="block" id="scen"><h2>当前情景树与期望值</h2><div id="sc"></div></section>
+  <section class="block" id="briefs"><h2>简报</h2><div id="br"></div></section>
+</main>
+<script src="data/state.js?v=20260921115647"></script>
+<script>
+(function(){
+  var ST=window.GOLDOPS_STATE; if(!ST){document.body.textContent='缺少 data/state.js';return;}
+  function esc(s){return String(s===null||s===undefined?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  var d=ST.decisions||[];
+  document.getElementById('dec').innerHTML=d.length?'<table><thead><tr><th>时间</th><th>类型</th><th>体制</th><th>U 前→后</th><th>前提</th><th>证伪条件</th><th>复核</th><th>备注</th></tr></thead><tbody>'+d.slice().reverse().map(function(x){return '<tr><td>'+esc(x.ts)+'</td><td class="t">'+esc(x.kind)+'</td><td class="t">'+esc(x.regime.state)+' '+x.regime.confidence+'</td><td>'+(x.u.before===null?'—':x.u.before)+' → '+x.u.after+'</td><td class="t">'+esc((x.premises||[]).join('；'))+'</td><td class="t">'+esc((x.falsifiers||[]).map(function(f){return f.hypothesis+'：'+(f.conditions||[]).join('；');}).join(' / '))+'</td><td>'+esc(x.review_date)+'</td><td class="t">'+esc(x.note)+'</td></tr>';}).join('')+'</tbody></table>':'<p class="muted">尚无决策。第一次周日裁决（goldops weekly-draft → adjudicate）后出现。</p>';
+  var al=ST.alerts||[];
+  document.getElementById('al').innerHTML=al.length?'<table><thead><tr><th>日期</th><th>级别</th><th>内容</th><th>渠道</th></tr></thead><tbody>'+al.slice().reverse().map(function(a){return '<tr><td>'+a.date+'</td><td class="'+(a.sev==='高'?'hi':'')+'">'+a.sev+'</td><td class="t">'+esc(a.text)+'</td><td class="t">'+(a.push?'推送':'页面')+'</td></tr>';}).join('')+'</tbody></table>':'<p class="muted">无</p>';
+  var A=ST.action||{};
+  document.getElementById('sc').innerHTML=A.tree?'<pre>'+esc(JSON.stringify({tree:A.tree,expectation:A.expectation,position:A.position,posture:A.posture},null,1))+'</pre>':'<p class="muted">无</p>';
+  var br=ST.briefs||[];
+  document.getElementById('br').innerHTML=br.length?'<p class="muted">简报文件在 state/briefs/：</p><ul>'+br.slice().reverse().map(function(b){return '<li>'+esc(b)+'</li>';}).join('')+'</ul>':'<p class="muted">无</p>';
+})();
+</script>
+</body>
+</html>
